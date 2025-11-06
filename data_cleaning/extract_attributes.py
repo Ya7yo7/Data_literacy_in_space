@@ -2,8 +2,9 @@
 """extract_attributes.py
 
 Read every CSV in data_cleaning/data (except mars_landing_boxes_1deg.csv),
-keep only columns long_East -> long_east, lat_North -> lat_north, topography -> altitude,
-and save outputs with the same filenames into data_clean_attributes/.
+keep only columns long_East, lat_North, topography, planet_rad and rename them
+with units in the headers, then save outputs with the same filenames into 
+data_clean_attributes/.
 """
 from __future__ import annotations
 
@@ -19,9 +20,10 @@ DST_DIR = BASE_DIR / "data_clean_attributes"
 EXCLUDE = {"mars_landing_boxes_1deg.csv"}
 
 KEEP_MAP = [
-    ("long_East", "long_east"),
-    ("lat_North", "lat_north"),
-    ("topography", "altitude"),
+    ("long_East", "long_east_deg"),
+    ("lat_North", "lat_north_deg"),
+    ("topography", "altitude_m"),
+    ("planet_rad", "radius_m"),
 ]
 
 
@@ -43,6 +45,8 @@ def process_file(path: Path) -> bool:
         print(f"ERROR: failed to read {path.name}: {e}", file=sys.stderr)
         return False
 
+    # Strip whitespace from column names
+    df.columns = df.columns.str.strip()
     cols = df.columns.tolist()
     mapping = {}
     missing = []
