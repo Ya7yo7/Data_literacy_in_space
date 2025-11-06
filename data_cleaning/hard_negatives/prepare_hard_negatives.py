@@ -12,6 +12,15 @@ If slope_deg or roughness_rms_m are missing they will be created and filled with
 Usage:
     python3 prepare_hard_negatives.py
 """
+'''
+We essentially have these constraint:
+| Attribute               | Safe Range    | Unsafe Range (Hard Negatives) | Reason                                                   |
+| ----------------------- | ------------- | ----------------------------- | -------------------------------------------------------- |
+| **Altitude**            | ≤ **-1300 m** | **> -1300 m**                 | Too high → thin atmosphere, poor parachute performance   |
+| **Slope (100 m scale)** | ≤ **5°**      | **> 10°** (strongly unsafe)   | Too steep → high risk of lander tilt, bounce, or failure |
+| **Roughness (RMS)**     | ≤ **8°**      | **> 10°** (strongly unsafe)   | Too rough → large boulders or radar scatter problems     |
+
+'''
 from pathlib import Path
 import pandas as pd
 import numpy as np
