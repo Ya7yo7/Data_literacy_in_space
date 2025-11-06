@@ -1,3 +1,20 @@
+"""coordinate_search.py
+
+Generate bounding boxes (±0.5° latitude/longitude) around Mars landing sites
+for data extraction from the ODE (Orbital Data Explorer) or similar sources.
+
+This script defines the planetocentric coordinates of six Mars landing sites
+and creates a CSV file with bounding box coordinates suitable for querying
+topographic data.
+
+Output:
+    mars_landing_boxes_1deg.csv with columns:
+    - Mission: name of the landing mission
+    - Latitude_center, Longitude_center: site coordinates
+    - Min_latitude, Max_latitude: latitude bounds
+    - Westernmost_longitude, Easternmost_longitude: longitude bounds
+"""
+
 '''Results:
 Mission,Latitude_center,Longitude_center,Min_latitude,Max_latitude,Westernmost_longitude,Easternmost_longitude
 Spirit,-14.5692,175.4729,-15.0692,-14.0692,174.9729,175.9729

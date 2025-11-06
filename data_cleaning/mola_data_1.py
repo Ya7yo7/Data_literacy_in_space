@@ -1,3 +1,25 @@
+"""mola_data_1.py
+
+Load, clean, and explore MOLA (Mars Orbiter Laser Altimeter) PEDR data.
+
+This script reads raw MOLA CSV data, filters for valid surface returns
+(c==1 and A==0), and provides basic statistics on topography and other
+measurements. Useful for understanding the structure and quality of MOLA
+datasets before further analysis.
+
+Column descriptions:
+- long_East: planetocentric east longitude (degrees 0–360° E)
+- lat_North: planetocentric latitude (degrees −90 S to +90 N)
+- topography: elevation relative to Mars areoid (meters)
+- MOLArange: spacecraft-to-surface distance (meters)
+- planet_rad: Mars center to surface distance (meters)
+- c: data quality flag (1 = valid, 0 = invalid)
+- A: additional status flag (usually 0 for normal surface)
+- Ephemeris Time: seconds past J2000
+- UTC: ISO 8601 timestamp
+- Orbit: MGS orbit number
+"""
+
 '''| Column name        | Description                                                                                                                                           | Units                    |
 | ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------ |
 | **long_East**      | Planetocentric east longitude of the measurement location.                                                                                            | degrees (0–360° E)       |
