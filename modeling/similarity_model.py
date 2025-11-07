@@ -27,11 +27,10 @@ class SimilarityModel:
         self.n_components = n_components
         self.bandwidth = bandwidth
         self.random_state = random_state
-        self.model = None
         
         if method == 'kde':
             # Will set bandwidth during training if None
-            pass
+            self.model = None  # KDE model will be created during training
         elif method == 'gmm':
             self.model = GaussianMixture(
                 n_components=n_components,
@@ -67,8 +66,10 @@ class SimilarityModel:
             self.model.fit(X_positive)
         elif self.method == 'gmm':
             self.model.fit(X_positive)
-            print(f"  Converged: {self.model.converged_}")
-            print(f"  Iterations: {self.model.n_iter_}")
+            if hasattr(self.model, 'converged_'):
+                print(f"  Converged: {self.model.converged_}")
+            if hasattr(self.model, 'n_iter_'):
+                print(f"  Iterations: {self.model.n_iter_}")
         
         print("  ✓ Training complete")
         return self

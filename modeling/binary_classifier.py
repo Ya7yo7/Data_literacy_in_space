@@ -60,6 +60,9 @@ class BinaryLandingSuitabilityClassifier:
             y_train: Training labels (0=unsuitable, 1=suitable)
             feature_names: List of feature names for interpretability
         """
+        if self.model is None:
+            raise ValueError("Model not initialized. Check __init__.")
+        
         print(f"\nTraining {self.model_type} binary classifier...")
         print(f"  Training samples: {len(X_train):,}")
         print(f"  Positive (suitable): {(y_train == 1).sum():,} ({100*(y_train==1).sum()/len(y_train):.1f}%)")
@@ -69,7 +72,7 @@ class BinaryLandingSuitabilityClassifier:
         self.model.fit(X_train, y_train)
         
         # Training accuracy
-        train_pred = self.model.predict(X_train)
+        train_pred = self.predict(X_train)
         train_acc = (train_pred == y_train).mean()
         print(f"  Training accuracy: {train_acc:.3f}")
         

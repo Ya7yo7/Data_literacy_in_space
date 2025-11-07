@@ -63,7 +63,7 @@ class SafetyFilter:
             # Compute threshold-based boundaries from safe examples
             # Unsafe regions have extreme slope or roughness
             self._compute_thresholds(X_safe, X_unsafe)
-        else:
+        elif self.model is not None:
             # Train on safe examples only (novelty detection)
             self.model.fit(X_safe)
         

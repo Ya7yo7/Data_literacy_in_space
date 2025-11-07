@@ -63,10 +63,10 @@ class MarsDataLoader:
         
         # Extract features and labels
         self.X = self.df[self.feature_cols].values
-        self.y = self.df['label'].values
+        self.y = np.asarray(self.df['label'].values)
         
         # Create binary labels: 1 = suitable (positive sites), 0 = unsuitable (negatives)
-        self.y_binary = (self.y == 1).astype(int)
+        self.y_binary = np.array(self.y == 1).astype(int)
         
         print(f"\nLabel distribution:")
         for label in sorted(np.unique(self.y)):
@@ -128,7 +128,7 @@ class MarsDataLoader:
         Returns:
             (X, y_binary) where y_binary is 0/1
         """
-        if self.X is None:
+        if self.X is None or self.y_binary is None:
             raise ValueError("Data not loaded. Call load() first.")
         
         X = self.get_features_scaled() if scale else self.X
@@ -144,7 +144,7 @@ class MarsDataLoader:
         Returns:
             (X, y) where y is -1/0/1
         """
-        if self.X is None:
+        if self.X is None or self.y is None:
             raise ValueError("Data not loaded. Call load() first.")
         
         X = self.get_features_scaled() if scale else self.X

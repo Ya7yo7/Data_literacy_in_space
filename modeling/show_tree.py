@@ -3,11 +3,12 @@ Generate and display a visual directory tree of the modeling folder.
 """
 from pathlib import Path
 import os
+from typing import Optional
 
 
 def generate_tree(directory: Path, prefix: str = "", is_last: bool = True, 
                  max_depth: int = 4, current_depth: int = 0, 
-                 exclude_dirs: set = None, exclude_patterns: set = None):
+                 exclude_dirs: Optional[set] = None, exclude_patterns: Optional[set] = None):
     """
     Generate a visual tree structure of a directory.
     
