@@ -1,0 +1,5 @@
+NASA Constraints Model
+======================
+Max slope: 5.0°
+Max roughness: 8.0m RMS
+Max altitude: -1300.0m
