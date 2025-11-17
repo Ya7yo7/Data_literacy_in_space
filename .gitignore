@@ -3,6 +3,11 @@ data/raw/*
 !data/raw/.gitkeep
 data/processed/*.csv
 
+# Model outputs (large files)
+modeling/output/results/candidate_evaluations.csv
+modeling/output/results/all_rf_accepted_sites.csv
+modeling/output/models/*.pkl
+
 # Intermediate processing directories
 Topography/data_cleaning/data_clean_attributes/
 Topography/data_cleaning/data_with_slopes/

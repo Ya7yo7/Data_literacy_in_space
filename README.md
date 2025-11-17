@@ -1,32 +1,50 @@
 # Data Literacy in Space
 
-A collection of Python tools for cleaning and analyzing Mars topographic data from MOLA (Mars Orbiter Laser Altimeter) to create labeled datasets of potential landing sites based on elevation, slope, and surface roughness.
+A comprehensive system for Mars landing site evaluation combining data cleaning, topographic analysis, and three-model machine learning comparison.
 
 ## Project Overview
 
-This project processes MOLA PEDR (Precision Experiment Data Record) data to:
+This project processes MOLA (Mars Orbiter Laser Altimeter) data to:
 - Extract topographic information around historical Mars landing sites
 - Compute surface metrics (slope, roughness) using local plane fitting
 - Generate labeled datasets (positive sites, weak negatives, hard negatives)
-- Combine multiple missions into a unified training dataset
+- Evaluate candidate landing sites using three complementary approaches:
+  1. **NASA Constraints** (deterministic)
+  2. **Random Forest** (supervised ML)
+  3. **Similarity KDE** (unsupervised ML)
 
 ## Project Structure
 
 ```
 Data_literacy_in_space/
+├── data/                           # Data files
+│   ├── processed/                  # Cleaned datasets (excluded from git)
+│   │   ├── final_labeled_dataset.csv   # 160K labeled training sites
+│   │   └── candidate_data.csv          # 758K unlabeled candidates
+│   └── previews/                   # First 1000 rows (tracked in git)
+│       ├── final_labeled_dataset_preview.csv
+│       └── candidate_data_preview.csv
 ├── Topography/
 │   └── data_cleaning/              # Data processing pipeline
 │       ├── *.py                    # Cleaning and analysis scripts
-│       ├── data/                   # Raw MOLA topographic data
-│       ├── data_clean_attributes/  # Extracted columns (lon, lat, alt, radius)
-│       ├── data_with_slopes/       # Slope metrics added
-│       ├── data_with_roughness/    # Roughness metrics added
-│       ├── data_complete/          # All metrics combined
 │       ├── hard_negatives/         # Known unsuitable terrain
-│       ├── weak_negatives/         # Random Mars surface samples
-│       └── final_labeled_dataset.csv  # Combined labeled dataset
-├── considered_regions.txt          # Data source regions
-└── candidate_data.csv              # Unlabeled candidate sites (add manually)
+│       └── weak_negatives/         # Random Mars surface samples
+├── modeling/                       # Three-model evaluation system
+│   ├── data_loader.py              # Training data loading and scaling
+│   ├── nasa_classifier.py          # Deterministic constraints
+│   ├── random_forest_model.py      # Supervised ensemble learning
+│   ├── similarity_model.py         # Unsupervised KDE similarity
+│   ├── evaluate_candidates.py      # Main evaluation pipeline
+│   ├── visualize_results.py        # Comparison plots
+│   ├── EVALUATION_REPORT.md        # Detailed findings
+│   └── output/
+│       ├── models/                 # Trained models
+│       ├── results/                # Evaluation results (101 MB)
+│       └── plots/                  # Visualization figures
+├── outputs/
+│   ├── figures/                    # Analysis plots
+│   └── intermediate/               # Temporary files
+└── considered_regions.txt          # Data source regions
 ```
 
 ## Data Cleaning Pipeline
@@ -71,9 +89,9 @@ Output: `final_labeled_dataset.csv` with ~160K labeled points.
 
 ## Usage
 
-### Complete Pipeline
+### Data Cleaning Pipeline
 
-Run the full data cleaning pipeline:
+Run the full data cleaning pipeline to generate labeled datasets:
 
 ```bash
 cd Topography/data_cleaning
@@ -94,7 +112,27 @@ python3 combine_metrics.py
 python3 create_final_labeled_dataset.py
 ```
 
-### Individual Scripts
+### Model Evaluation Pipeline
+
+Evaluate 758K candidate landing sites with three models:
+
+```bash
+cd modeling
+
+# Train models and evaluate all candidates
+python3 evaluate_candidates.py
+
+# Generate comparison visualizations
+python3 visualize_results.py
+```
+
+**Output**: 
+- Trained models saved to `output/models/`
+- Evaluation results (101 MB) in `output/results/candidate_evaluations.csv`
+- Comparison plots in `output/plots/`
+- Detailed report in `EVALUATION_REPORT.md`
+
+### Individual Data Cleaning Scripts
 
 Generate landing site bounding boxes:
 ```bash
@@ -111,15 +149,38 @@ Explore raw MOLA data:
 python3 mola_data_1.py
 ```
 
-Generate visualization heatmap:
-```bash
-python3 heatmap_1.py
-```
+## Evaluation Results Summary
+
+**Region**: 320-330°E, ±5°N (Equatorial Mars)  
+**Candidates Evaluated**: 758,108 sites
+
+### Model Performance
+
+| Model | Philosophy | Suitable Sites | % Suitable |
+|-------|-----------|----------------|------------|
+| NASA Constraints | Physics-based rules | 388,348 | 51.2% |
+| Random Forest | Supervised ML | 2,240 | 0.3% |
+| Similarity KDE | Unsupervised ML | 340,910 | 45.0% |
+
+### Consensus Analysis
+
+- **All Accept (3/3)**: 0 sites (0.0%)
+- **Majority Accept (2/3)**: 301,959 sites (39.8%) — **Recommended**
+- **Minority Accept (1/3)**: 127,580 sites (16.8%)
+- **All Reject (0/3)**: 328,569 sites (43.3%)
+
+**Key Finding**: Random Forest is extremely conservative (0.3% acceptance), likely due to:
+- 2x weighting of hard negatives during training
+- Perfect training accuracy suggesting overfitting
+- Strong dependence on altitude and geographic features (82% combined importance)
+
+See `modeling/EVALUATION_REPORT.md` for detailed analysis.
 
 ## Data Sources
 
 - **MOLA PEDR**: Mars Global Surveyor laser altimetry data from NASA's Planetary Data System (PDS)
 - **Landing Site Coordinates**: Planetocentric lat/lon from mission documentation
+- **Training Data**: 160,777 labeled sites from 6 Mars missions (Curiosity, InSight, Opportunity, Perseverance, Phoenix, Spirit)
 
 ## Requirements
 
@@ -127,11 +188,13 @@ python3 heatmap_1.py
 - pandas
 - numpy
 - matplotlib
+- seaborn
+- scikit-learn
 
 Install dependencies:
 
 ```bash
-pip install pandas numpy matplotlib
+pip install pandas numpy matplotlib seaborn scikit-learn
 ```
 
 ## Mars Coordinate Systems
