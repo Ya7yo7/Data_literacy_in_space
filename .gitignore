@@ -1,0 +1,47 @@
+# Large data files (>50MB)
+data/raw/*
+!data/raw/.gitkeep
+data/processed/*.csv
+
+# Intermediate processing directories
+Topography/data_cleaning/data_clean_attributes/
+Topography/data_cleaning/data_with_slopes/
+Topography/data_cleaning/data_with_roughness/
+Topography/data_cleaning/data_complete/
+Topography/data_cleaning/hard_negatives/*.csv
+Topography/data_cleaning/weak_negatives/*.csv
+outputs/intermediate/*
+!outputs/intermediate/.gitkeep
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Temporary files
+*.tmp
+*.bak
+*.log
