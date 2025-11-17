@@ -1,96 +1,119 @@
 # Data Literacy in Space
 
-A collection of Python tools for analyzing Mars topographic data from MOLA (Mars Orbiter Laser Altimeter) and assessing potential landing sites based on elevation, slope, and surface roughness.
+A collection of Python tools for cleaning and analyzing Mars topographic data from MOLA (Mars Orbiter Laser Altimeter) to create labeled datasets of potential landing sites based on elevation, slope, and surface roughness.
 
 ## Project Overview
 
 This project processes MOLA PEDR (Precision Experiment Data Record) data to:
 - Extract topographic information around historical Mars landing sites
-- Analyze feasible landing regions between multiple sites
-- Generate surface metrics (slope, roughness) for safety assessment
-- Visualize topographic data and landing constraints
+- Compute surface metrics (slope, roughness) using local plane fitting
+- Generate labeled datasets (positive sites, weak negatives, hard negatives)
+- Combine multiple missions into a unified training dataset
 
 ## Project Structure
 
 ```
 Data_literacy_in_space/
-├── data_cleaning/              # Main analysis scripts
-│   ├── data/                   # Raw topographic CSV data
-│   │   ├── curiosity_topography.csv
-│   │   ├── insight_topography.csv
-│   │   ├── opportunity_topography.csv
-│   │   ├── perseverance_topography.csv
-│   │   ├── phoenix_topography.csv
-│   │   ├── spirit_topography.csv
-│   │   └── mars_landing_boxes_1deg.csv
-│   ├── data_clean_attributes/  # Processed data (long_east, lat_north, altitude)
-│   └── *.py                    # Analysis scripts (see below)
-└── data_files/                 # Additional data resources
+├── Topography/
+│   └── data_cleaning/              # Data processing pipeline
+│       ├── *.py                    # Cleaning and analysis scripts
+│       ├── data/                   # Raw MOLA topographic data
+│       ├── data_clean_attributes/  # Extracted columns (lon, lat, alt, radius)
+│       ├── data_with_slopes/       # Slope metrics added
+│       ├── data_with_roughness/    # Roughness metrics added
+│       ├── data_complete/          # All metrics combined
+│       ├── hard_negatives/         # Known unsuitable terrain
+│       ├── weak_negatives/         # Random Mars surface samples
+│       └── final_labeled_dataset.csv  # Combined labeled dataset
+├── considered_regions.txt          # Data source regions
+└── candidate_data.csv              # Unlabeled candidate sites (add manually)
 ```
 
-## Scripts
+## Data Cleaning Pipeline
 
-### Data Preparation
+### 1. Data Extraction (`extract_attributes.py`)
+Batch processes raw MOLA CSV files to extract essential columns:
+- `long_east_deg` — East longitude (0–360°)
+- `lat_north_deg` — Planetocentric latitude
+- `altitude_m` — Elevation relative to Mars areoid
+- `radius_m` — Local planetary radius
 
-- **`coordinate_search.py`** — Generates bounding boxes (±0.5° lat/lon) around Mars landing sites for data extraction from ODE (Orbital Data Explorer).
+### 2. Coordinate Search (`coordinate_search.py`)
+Generates bounding boxes (±0.5° lat/lon) around historical landing sites for querying additional data from NASA's ODE (Orbital Data Explorer).
 
-- **`extract_attributes.py`** — Batch processes raw topography CSV files to extract and rename key columns (`long_east`, `lat_north`, `altitude`) for downstream analysis.
+### 3. Surface Slope Computation (`slope_gen.py`)
+Calculates local surface slope using adaptive plane fitting:
+- Finds neighbors within 1 km baseline distance
+- Fits a plane using least-squares regression
+- Computes slope angle from plane gradient
+- Accounts for Mars' ellipsoidal shape using local radius
 
-### Topographic Analysis
+Output: `slope_deg` column added to each dataset.
 
-- **`mola_data_1.py`** — Loads and cleans raw MOLA PEDR data, filters valid surface returns (quality flags), and provides basic statistics on elevation and measurements.
+### 4. Surface Roughness Computation (`roughness_gen.py`)
+Calculates terrain roughness as RMS deviation from local plane:
+- Uses same adaptive neighborhood as slope computation
+- Measures vertical scatter around best-fit plane
+- Indicates small-scale topographic variability
 
-- **`feasible_region.py`** — Calculates an elliptical feasible landing region between two sites (InSight and Curiosity) using haversine distance on Mars' surface. Outputs extreme coordinates for data queries.
+Output: `roughness_rms_m` column added to each dataset.
 
-### Visualization
+### 5. Dataset Combination (`combine_metrics.py`)
+Merges slope and roughness data into complete topographic profiles for each mission.
 
-- **`heatmap_1.py`** — Generates a synthetic heatmap with a clear elliptical cutout to visualize regions of interest or landing constraints.
+### 6. Labeled Dataset Creation (`create_final_labeled_dataset.py`)
+Combines all missions with labels:
+- **Positive samples (label=1)**: Historical landing sites (Curiosity, InSight, Opportunity, Perseverance, Phoenix, Spirit)
+- **Weak negatives (label=0)**: Random Mars surface points (no known hazards)
+- **Hard negatives (label=-1)**: Known unsuitable terrain (steep slopes, rough surfaces)
 
-### Future Work (TODO)
-
-- **`slope_gen.py`** — Will implement surface slope calculation using finite difference or Horn's method for gradient analysis.
-
-- **`roughness_gen.py`** — Will compute terrain roughness metrics (RMS height, TRI, Hurst exponent) for landing hazard assessment.
+Output: `final_labeled_dataset.csv` with ~160K labeled points.
 
 ## Usage
 
-### 1. Extract Clean Attributes from Raw Data
+### Complete Pipeline
 
-Process all topography CSV files to keep only essential columns:
+Run the full data cleaning pipeline:
 
 ```bash
-cd data_cleaning
+cd Topography/data_cleaning
+
+# 1. Extract attributes from raw MOLA data
 python3 extract_attributes.py
+
+# 2. Compute slope metrics
+python3 slope_gen.py
+
+# 3. Compute roughness metrics
+python3 roughness_gen.py
+
+# 4. Combine all metrics
+python3 combine_metrics.py
+
+# 5. Generate final labeled dataset
+python3 create_final_labeled_dataset.py
 ```
 
-Output: cleaned CSV files in `data_clean_attributes/` with columns `long_east`, `lat_north`, `altitude`.
+### Individual Scripts
 
-### 2. Generate Landing Site Bounding Boxes
-
-Create coordinate boxes for data queries:
-
+Generate landing site bounding boxes:
 ```bash
 python3 coordinate_search.py
 ```
 
-Output: `mars_landing_boxes_1deg.csv` with lat/lon bounds for each mission.
-
-### 3. Analyze Feasible Landing Region
-
-Compute elliptical region between two sites:
-
+Analyze feasible landing region between sites:
 ```bash
 python3 feasible_region.py
 ```
 
-Output: Prints extreme lat/lon coordinates and generates visualization.
-
-### 4. Explore MOLA Data
-
-Load and inspect raw MOLA PEDR data (update file path in script):
-
+Explore raw MOLA data:
 ```bash
 python3 mola_data_1.py
+```
+
+Generate visualization heatmap:
+```bash
+python3 heatmap_1.py
 ```
 
 ## Data Sources
