@@ -2,16 +2,20 @@
 
 A comprehensive system for Mars landing site evaluation combining data cleaning, topographic analysis, and three-model machine learning comparison.
 
+> **📊 [View Complete Results with Figures →](RESULTS.md)**
+
 ## Project Overview
 
 This project processes MOLA (Mars Orbiter Laser Altimeter) data to:
 - Extract topographic information around historical Mars landing sites
 - Compute surface metrics (slope, roughness) using local plane fitting
 - Generate labeled datasets (positive sites, weak negatives, hard negatives)
-- Evaluate candidate landing sites using three complementary approaches:
-  1. **NASA Constraints** (deterministic)
-  2. **Random Forest** (supervised ML)
-  3. **Similarity KDE** (unsupervised ML)
+- Evaluate **758,108 candidate landing sites** using three complementary approaches:
+  1. **NASA Constraints** (deterministic) → 51.2% suitable
+  2. **Random Forest** (supervised ML) → 0.3% suitable (extremely conservative)
+  3. **Similarity KDE** (unsupervised ML) → 45.0% suitable
+
+**Result**: **301,959 sites (39.8%)** recommended with majority consensus (2 of 3 models agree)
 
 ## Project Structure
 
@@ -149,10 +153,13 @@ Explore raw MOLA data:
 python3 mola_data_1.py
 ```
 
-## Evaluation Results Summary
+## Quick Results Summary
+
+> **📊 [Full Results with All Figures and Analysis →](RESULTS.md)**
 
 **Region**: 320-330°E, ±5°N (Equatorial Mars)  
-**Candidates Evaluated**: 758,108 sites
+**Candidates Evaluated**: 758,108 sites  
+**Training Data**: 160,777 labeled sites from 6 Mars missions
 
 ### Model Performance
 
@@ -162,19 +169,28 @@ python3 mola_data_1.py
 | Random Forest | Supervised ML | 2,240 | 0.3% |
 | Similarity KDE | Unsupervised ML | 340,910 | 45.0% |
 
-### Consensus Analysis
+### Consensus Results
 
 - **All Accept (3/3)**: 0 sites (0.0%)
-- **Majority Accept (2/3)**: 301,959 sites (39.8%) — **Recommended**
+- **Majority Accept (2/3)**: **301,959 sites (39.8%)** — ✅ **Recommended**
 - **Minority Accept (1/3)**: 127,580 sites (16.8%)
 - **All Reject (0/3)**: 328,569 sites (43.3%)
 
-**Key Finding**: Random Forest is extremely conservative (0.3% acceptance), likely due to:
-- 2x weighting of hard negatives during training
-- Perfect training accuracy suggesting overfitting
-- Strong dependence on altitude and geographic features (82% combined importance)
+### Model Agreement
 
-See `modeling/EVALUATION_REPORT.md` for detailed analysis.
+- **NASA vs Similarity**: 83.1% agreement (300,393 sites both accept)
+- **RF vs Similarity**: 54.7% agreement (0 sites both accept - RF strictly more conservative)
+- **NASA vs RF**: 48.9% agreement (1,566 sites both accept)
+
+### Key Findings
+
+1. **No perfect consensus**: All three models never agree on acceptance
+2. **Majority consensus works**: NASA + Similarity agree on 300K+ sites (the recommended set)
+3. **RF is extremely conservative**: Only 0.3% acceptance suggests overfitting to training geography
+4. **Top recommended sites**: Located at 323°E, -1.4°N with altitude ~-1700m, slope <0.6°, roughness <1.5m
+
+**Detailed Analysis**: See [`RESULTS.md`](RESULTS.md) for complete results with all visualizations and interpretations.  
+**Technical Report**: See [`modeling/EVALUATION_REPORT.md`](modeling/EVALUATION_REPORT.md) for in-depth technical analysis.
 
 ## Data Sources
 
